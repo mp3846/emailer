@@ -10,7 +10,7 @@ const transporter = createTransport({
 	secure: true,
 	auth: {
 		user: process.env.SENDER_EMAIL_USERNAME,
-		pass: process.env.SENDER_EMAIL_PASSWORD
+		pass: process.env.SENDER_APP_PASSWORD // Application-specific password. see https://support.google.com/mail/?p=InvalidSecondFactor
 	}
 })
 

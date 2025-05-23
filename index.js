@@ -1,30 +1,43 @@
+import 'dotenv/config'
 import { createTransport } from 'nodemailer'
-import * as dotenv from 'dotenv'
 
-dotenv.config()
+const emailEnvs = {
+	SENDER_EMAIL_USERNAME: process.env.SENDER_EMAIL_USERNAME,
+	SENDER_APP_PASSWORD: process.env.SENDER_APP_PASSWORD,
+	SENDER_EMAIL_ADDRESS: process.env.SENDER_EMAIL_ADDRESS,
+	RECIEVER_EMAIL_ADDRESS: process.env.RECIEVER_EMAIL_ADDRESS
+}
+
+Object.keys(emailEnvs).forEach(
+	(env) => !emailEnvs[env] && console.warn(`Environment variable ${env} is not set`)
+)
 
 const transporter = createTransport({
 	service: 'gmail',
 	host: 'smtp.gmail.com',
 	port: 465,
+	html: true,
 	secure: true,
 	auth: {
 		user: process.env.SENDER_EMAIL_USERNAME,
-		pass: process.env.SENDER_APP_PASSWORD // Application-specific password. see https://support.google.com/mail/?p=InvalidSecondFactor
+		pass: process.env.SENDER_APP_PASSWORD
 	}
 })
 
-const sendEmail = (pair, price, orderType) => {
+const sendEmail = (message, subject = '') => {
 	const mailOptions = {
-		from: `MP Trader <${process.env.SENDER_EMAIL_ADDRESS}>`,
+		from: `Mosi watcher <${process.env.SENDER_EMAIL_ADDRESS}>`,
 		to: process.env.RECIEVER_EMAIL_ADDRESS,
-		subject: 'Trade Alert',
-		html: `<b>${pair}</b> crossed <b>${price}</b> so check it to <b>${orderType}</b>`
+		subject: subject || 'Notification from watcher',
+		html: message
 	}
 	transporter.sendMail(mailOptions, (error, info) => {
-		if (error) return console.log(error)
-		console.log('Email sent: ' + info.response)
+		if (error) {
+			console.log(`error: ${error}`, `\ninfo: ${info}`)
+			return
+		}
+		console.log(`Email sent (content: ${message})`)
 	})
 }
 
-sendEmail('EURUSD', 1.23456, 'Sell')
+export default sendEmail
